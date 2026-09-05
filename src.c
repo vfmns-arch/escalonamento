@@ -107,6 +107,7 @@ void execute(task *head){
     }
     count++;
   }
+  //free o resto da fila
   while(top != NULL){
     aux = top;
     top = top->next;
@@ -180,6 +181,7 @@ int main(int argc, char **argv) {
       perror("fopen edf");
       return 1;
     }
+    fprintf(fptr, "EXECUTION BY EDF\n\n");
     execute(head);
   }
   fclose(fptr);

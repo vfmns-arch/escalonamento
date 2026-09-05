@@ -14,6 +14,16 @@ typedef struct{
   unsigned int k;
   struct task *next;
 } task;
+
+//free todos os elementos atrasados a partir de current
+task *flush(task *current){
+  while(current != NULL && ++current->lifetime == curren->deadline){
+    task *aux = current;
+    current = current->next;
+    free(aux);
+  }
+  return current;
+}
 int main(int argc, char **argv) {
   if(argc < 3) {
     fprintf(stderr, "Erro: %s <rate|edf> <file>\n", argv[0]);
@@ -97,37 +107,29 @@ int main(int argc, char **argv) {
       if(top == NULL){
         idle++;
       }else{
+        if(idle > 0){
+          fprintf(fptr, "idle for %d units\n", idle);
+          idle = 0;
+        }
         top->extime++;
         if(++top->progress == top->burst){
           aux = top;
           top = top->next;
           fprintf(fptr, "[%s] for %d units - F\n", aux->name, aux->extime);
           free(aux);
-        }else if(++top->lifetime == top->deadline){
+        }
+        if(++top->lifetime == top->deadline){
           aux = top;
           top = top->next;
+          top = flush(top);
           fprintf(fptr, "[%s] for %d units - L\n", aux->name, aux->extime);
           free(aux);
         }
-        aux = top->next;
-        task *last = top;
-        task *auxb;
         //atualiza o resto da fila
+        aux = top;
         while(aux != NULL){
-          aux->lifetime++;
-          if(aux->lifetime == aux->deadline){
-            last->next = aux->next;
-            auxb = aux;
-            aux = aux->next;
-            free(auxb);
-          }else{
-            last = aux;
-            aux = aux->next;
-          }
-        }
-        if(idle > 0){
-          fprintf("idle for %d units\n", idle);
-          idle = 0;
+          aux = aux->next;
+          aux = flush(aux);
         }
       }
     }

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 typedef struct{
   char name[4];
@@ -8,13 +9,48 @@ typedef struct{
   unsigned int burst;
   unsigned int lifetime;
   unsigned int progress;
-  unsigned int extime;
   unsigned int l;
   unsigned int f;
   unsigned int k;
   struct task *next;
 } task;
-
+FILE *fptr;
+unsigned int extime = 0;
+void org(task *head, task *top, unsigned int count){
+  task *curr = head;
+  while(curr != NULL){
+    if(count % curr->periodo == 0){
+      task *aux = malloc(sizeof(task));
+      *aux = *curr;
+      task *re = aux;
+      re->next = top;
+      unsigned int a;
+      unsigned int b;
+      while(re->next != NULL){
+        if(flag){
+          a = re->next->deadline;
+          b = re->deadline;
+        }else{
+          a = re->next->periodo;
+          b = re->periodo;
+        }
+        if(a >= b){
+          break;
+        }
+        aux = re->next;
+        re->next = aux->next;
+        aux->next = re;
+      }
+      if(re->next == top){
+        fprintf(fptr "[%s] for %u units - H\n", top->name, extime);
+        top = re;
+        extime = 0;
+      }
+    }
+    curr = curr->next;
+  }
+  return;
+}
 //free todos os elementos atrasados a partir de current
 task *flush(task *current){
   while(current != NULL && ++current->lifetime == curren->deadline){
@@ -30,7 +66,7 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  FILE *fptr = fopen(argv[2], "r");
+  fptr = fopen(argv[2], "r");
   if(fptr == NULL) {
     perror("fopen");
     return 1;
@@ -53,7 +89,6 @@ int main(int argc, char **argv) {
       free(new_task);
       continue;
     }
-    new_task->extime = 0;
     new_task->lifetime = 0;
     new_task->progress = 0;
     new_task->f = 0;
@@ -79,51 +114,34 @@ int main(int argc, char **argv) {
     fprinf(fptr, "EXECUTION BY RATE\n\n");
     int count = 0;
     task *top = NULL;
-    task *curr;
     task *aux;
     while(count < 101){
       unsigned int idle = 0;
-      curr = head;
       //organiza a fila e adiciona elementos
-      while(curr != NULL){
-        if(count % curr->periodo == 0){
-          aux = malloc(sizeof(task));
-          *aux = *curr;
-          task *re = aux;
-          re->next = top;
-          while(re->next != NULL && re->next->periodo >= re->periodo){
-            aux = re->next;
-            re->next = aux->next;
-            aux->next = re;
-          }
-          if(re->next == top){
-            fprintf(fptr, "[%s] for %d units - H\n", top->name, top->extime);
-            top = re;
-          }
-        }
-        curr = curr->next;
-      }
+      org(head, top, count);
       //atualiza o topo
       if(top == NULL){
         idle++;
       }else{
+        extime++;
         if(idle > 0){
-          fprintf(fptr, "idle for %d units\n", idle);
+          fprintf(fptr, "idle for %u units\n", idle);
           idle = 0;
         }
-        top->extime++;
         if(++top->progress == top->burst){
           aux = top;
           top = top->next;
-          fprintf(fptr, "[%s] for %d units - F\n", aux->name, aux->extime);
+          fprintf(fptr, "[%s] for %u units - F\n", aux->name, extime);
           free(aux);
+          extime = 0;
         }
         if(++top->lifetime == top->deadline){
           aux = top;
           top = top->next;
           top = flush(top);
-          fprintf(fptr, "[%s] for %d units - L\n", aux->name, aux->extime);
+          fprintf(fptr, "[%s] for %u units - L\n", aux->name, extime);
           free(aux);
+          extime = 0;
         }
         //atualiza o resto da fila
         aux = top;
@@ -132,6 +150,7 @@ int main(int argc, char **argv) {
           aux = flush(aux);
         }
       }
+      count++;
     }
     //free o que sobrou da fila
     while(top != NULL){
@@ -139,10 +158,9 @@ int main(int argc, char **argv) {
       top = top->next;
       free(aux);
     }
-
-    
     fclose(fptr);
   }else if(argv[1] == "edf"){
+    flag = 1;
     
   }
 

@@ -18,7 +18,7 @@ typedef struct task task;
 FILE *fptr;
 unsigned int extime = 0;
 int flag = 0;
-void org(task *head, task *top, unsigned int count){
+task *org(task *head, task *top, unsigned int count){
   task *curr = head;
   while(curr != NULL){
     if(count % curr->periodo == 0){
@@ -51,7 +51,7 @@ void org(task *head, task *top, unsigned int count){
     }
     curr = curr->next;
   }
-  return;
+  return top;
 }
 //free todos os elementos atrasados a partir de current
 task *flush(task *current){
@@ -68,7 +68,7 @@ void execute(task *head){
   unsigned int idle = 0;
   task *aux;
   while(count < 101){
-    org(head, top, count);
+    top = org(head, top, count);
     //atualiza o topo
     if(top == NULL){
       idle++;
@@ -84,7 +84,7 @@ void execute(task *head){
         free(aux);
         extime = 0;
       }
-      if(++top->lifetime == top->deadline){
+      if(top != NULL && ++top->lifetime == top->deadline){
         aux = top;
         top = top->next;
         top = flush(top);
@@ -95,8 +95,10 @@ void execute(task *head){
       //atualiza o resto da fila
       aux = top;
       while(aux != NULL){
+        task *last = aux;
         aux = aux->next;
         aux = flush(aux);
+        last->next = aux;
       }
     }
     count++;
@@ -151,10 +153,6 @@ int main(int argc, char **argv) {
     }
   }
   fclose(fptr);
-  unsigned int count = 0;
-  task *top = NULL;
-  unsigned int idle = 0;
-  task *aux;
   //rate
   if(strcmp(argv[1], "rate") == 0){
     fptr = fopen("rate_vfmns.txt", "w");

@@ -60,6 +60,52 @@ task *flush(task *current){
   }
   return current;
 }
+void execute(task *head){
+  unsigned int count = 0;
+  task *top = NULL;
+  unsigned int idle = 0;
+  task *aux;
+  while(count < 101){
+    org(head, top, count);
+    //atualiza o topo
+    if(top == NULL){
+      idle++;
+    }else{
+      extime++;
+      if(idle > 0){
+        fprintf(fptr, "idle for %u units\n", idle);
+      }
+      if(++top->progress == top->burst){
+        aux = top;
+        top = top->next;
+        fprintf(fptr, "[%s] for %u units - F\n", aux->name, extime);
+        free(aux);
+        extime = 0;
+      }
+      if(++top->lifetime == top->deadline){
+        aux = top;
+        top = top->next;
+        top = flush(top);
+        fprintf(fptr, "[%s] for %u units - L\n", aux->name, extime);
+        free(aux);
+        extime = 0;
+      }
+      //atualiza o resto da fila
+      aux = top;
+      while(aux != NULL){
+        aux = aux->next;
+        aux = flush(aux);
+      }
+    }
+    count++;
+  }
+  while(top != NULL){
+    aux = top;
+    top = top->next;
+    free(aux);
+  }
+  return;
+}
 int main(int argc, char **argv) {
   if(argc < 3) {
     fprintf(stderr, "Erro: %s <rate|edf> <file>\n", argv[0]);
@@ -104,6 +150,10 @@ int main(int argc, char **argv) {
     }
   }
   fclose(fptr);
+  unsigned int count = 0;
+  task *top = NULL;
+  unsigned int idle = 0;
+  task *aux;
   //rate
   if(argv[1] == "rate"){
     fptr = fopen("rate_vfmns.txt", "w");
@@ -112,64 +162,23 @@ int main(int argc, char **argv) {
       return 1;
     }
     fprinf(fptr, "EXECUTION BY RATE\n\n");
-    int count = 0;
-    task *top = NULL;
-    task *aux;
-    while(count < 101){
-      unsigned int idle = 0;
-      //organiza a fila e adiciona elementos
-      org(head, top, count);
-      //atualiza o topo
-      if(top == NULL){
-        idle++;
-      }else{
-        extime++;
-        if(idle > 0){
-          fprintf(fptr, "idle for %u units\n", idle);
-          idle = 0;
-        }
-        if(++top->progress == top->burst){
-          aux = top;
-          top = top->next;
-          fprintf(fptr, "[%s] for %u units - F\n", aux->name, extime);
-          free(aux);
-          extime = 0;
-        }
-        if(++top->lifetime == top->deadline){
-          aux = top;
-          top = top->next;
-          top = flush(top);
-          fprintf(fptr, "[%s] for %u units - L\n", aux->name, extime);
-          free(aux);
-          extime = 0;
-        }
-        //atualiza o resto da fila
-        aux = top;
-        while(aux != NULL){
-          aux = aux->next;
-          aux = flush(aux);
-        }
-      }
-      count++;
-    }
-    //free o que sobrou da fila
-    while(top != NULL){
-      aux = top;
-      top = top->next;
-      free(aux);
-    }
-    fclose(fptr);
+    execute(head);
   }else if(argv[1] == "edf"){
     flag = 1;
-    
+    fptr = fopen("edf_vfmns.txt", "w");
+    if(fptr == NULL){
+      perror("fopen edf");
+      return 1;
+    }
+    execute(head);
   }
+  fclose(fptr);
 
   //free os inicializadores
-  task *current = head;
-  while(current != NULL){
-      task *next = current->next;
-      free(current);
-      current = next;
+  while(head != NULL){
+      task *a = head->next;
+      free(head);
+      head = a;
   }
   return 0;
 }

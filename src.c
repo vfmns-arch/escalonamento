@@ -80,6 +80,7 @@ void execute(task *head){
       extime++;
       if(idle > 0){
         fprintf(fptr, "idle for %u units\n", idle);
+        idle = 0;
       }
       if(++top->progress == top->burst){
         aux = top;

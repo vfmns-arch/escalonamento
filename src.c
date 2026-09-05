@@ -18,6 +18,7 @@ typedef struct task task;
 FILE *fptr;
 unsigned int extime = 0;
 int flag = 0;
+unsigned int t;
 task *org(task *head, task *top, unsigned int count){
   task *curr = head;
   while(curr != NULL){
@@ -70,7 +71,7 @@ void execute(task *head){
   task *top = NULL;
   unsigned int idle = 0;
   task *aux;
-  while(count < 101){
+  while(count <= t){
     top = org(head, top, count);
     //atualiza o topo
     if(top == NULL){
@@ -131,6 +132,13 @@ int main(int argc, char **argv) {
   task *head = NULL;
   task *tail = NULL;
   char string[200];
+  //read o tempo
+  if(fgets(string, sizeof(string), fptr) != NULL){
+    if(sscanf(string, "%u", &t) != 1){
+      printf("tempo invalido");
+      return 1;
+    }
+  }
   while(fgets(string, sizeof(string), fptr) != NULL){ 
     task *new_task = malloc(sizeof(task));
     if(new_task == NULL){

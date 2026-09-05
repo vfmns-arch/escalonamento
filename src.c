@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef struct{
+struct task{
   char name[4];
   unsigned int periodo;
   unsigned int deadline;
@@ -13,9 +13,11 @@ typedef struct{
   unsigned int f;
   unsigned int k;
   struct task *next;
-} task;
+};
+typedef struct task task;
 FILE *fptr;
 unsigned int extime = 0;
+int flag = 0;
 void org(task *head, task *top, unsigned int count){
   task *curr = head;
   while(curr != NULL){
@@ -42,7 +44,7 @@ void org(task *head, task *top, unsigned int count){
         aux->next = re;
       }
       if(re->next == top){
-        fprintf(fptr "[%s] for %u units - H\n", top->name, extime);
+        fprintf(fptr, "[%s] for %u units - H\n", top->name, extime);
         top = re;
         extime = 0;
       }
@@ -53,7 +55,7 @@ void org(task *head, task *top, unsigned int count){
 }
 //free todos os elementos atrasados a partir de current
 task *flush(task *current){
-  while(current != NULL && ++current->lifetime == curren->deadline){
+  while(current != NULL && ++current->lifetime == current->deadline){
     task *aux = current;
     current = current->next;
     free(aux);
@@ -131,7 +133,7 @@ int main(int argc, char **argv) {
       fclose(fptr);
       return 1;
     }
-    if(sscanf(string, "%3s %u %u %u", new_task->name, &new_task->periodo, &new_task->deadline, &new_task->burst) != 3){
+    if(sscanf(string, "%3s %u %u %u", new_task->name, &new_task->periodo, &new_task->deadline, &new_task->burst) != 4){
       free(new_task);
       continue;
     }
@@ -139,7 +141,6 @@ int main(int argc, char **argv) {
     new_task->progress = 0;
     new_task->f = 0;
     new_task->l = 0;
-    new_task->h = k;
     new_task->next = NULL;
     if(head == NULL){
       head = new_task;
@@ -155,15 +156,15 @@ int main(int argc, char **argv) {
   unsigned int idle = 0;
   task *aux;
   //rate
-  if(argv[1] == "rate"){
+  if(strcmp(argv[1], "rate") == 0){
     fptr = fopen("rate_vfmns.txt", "w");
     if(fptr == NULL){
       perror("fopen rate");
       return 1;
     }
-    fprinf(fptr, "EXECUTION BY RATE\n\n");
+    fprintf(fptr, "EXECUTION BY RATE\n\n");
     execute(head);
-  }else if(argv[1] == "edf"){
+  }else if(strcmp(argv[1], "edf") == 0){
     flag = 1;
     fptr = fopen("edf_vfmns.txt", "w");
     if(fptr == NULL){

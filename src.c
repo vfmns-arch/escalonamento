@@ -47,7 +47,6 @@ task *org(task *head, task *top, unsigned int count){
       if(re->next == top){
         if(top != NULL){
           fprintf(fptr, "[%s] for %u units - H\n", top->name, extime);
-          idle = 0;
         }
         top = re;
         extime = 0;

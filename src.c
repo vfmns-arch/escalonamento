@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef struct task{
+typedef struct{
   char name[4];
   unsigned int periodo;
   unsigned int deadline;

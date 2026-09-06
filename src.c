@@ -166,7 +166,7 @@ int main(int argc, char **argv) {
     new_id->f = 0;
     new_id->l = 0;
     new_id->k = 0;
-    new_id->next = NULL;
+    new_task->next = NULL;
     if(head == NULL){
       head = new_task;
       tail = new_task;

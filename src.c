@@ -82,9 +82,9 @@ void execute(task *head){
       idle++;
     }else{
       extime++;
+      idle = 0;
       if(idle > 0){
         fprintf(fptr, "idle for %u units\n", idle);
-        idle = 0;
       }
       if(++top->progress == top->burst){
         top->id->f++;
@@ -113,6 +113,11 @@ void execute(task *head){
       }
     }
     count++;
+  }
+  if(idle > 0){
+    fprintf(fptr, "idle for %u units\n", idle);
+  }else if(extime > 0){
+    fprintf(fptr, "[%s] for %u units - K", top->id->name, extime);
   }
   //free o resto da fila
   while(top != NULL){
@@ -194,10 +199,6 @@ int main(int argc, char **argv) {
     }
     fprintf(fptr, "EXECUTION BY EDF\n\n");
     execute(head);
-  }
-  //print o idle, caso o processo termine enquanto estiver idle
-  if(idle > 0){
-    fprintf(fptr, "idle for %u units\n", idle);
   }
   //escreve os resultados e free os inicializadores
   fprintf(fptr, "\nLOST DEADLINES\n");

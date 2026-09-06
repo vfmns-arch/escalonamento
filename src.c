@@ -21,6 +21,7 @@ typedef struct task task;
 typedef struct result result;
 FILE *fptr;
 unsigned int extime = 0;
+unsigned int idle = 0;
 int flag = 0;
 unsigned int t;
 task *org(task *head, task *top, unsigned int count){
@@ -73,9 +74,8 @@ task *flush(task *current){
 void execute(task *head){
   unsigned int count = 0;
   task *top = NULL;
-  unsigned int idle = 0;
   task *aux;
-  while(count <= t){
+  while(count < t){
     top = org(head, top, count);
     //atualiza o topo
     if(top == NULL){
@@ -128,7 +128,6 @@ int main(int argc, char **argv) {
     fprintf(stderr, "Erro: %s <rate|edf> <file>\n", argv[0]);
     return 1;
   }
-
   fptr = fopen(argv[2], "r");
   if(fptr == NULL) {
     perror("fopen");
@@ -183,7 +182,7 @@ int main(int argc, char **argv) {
       perror("fopen rate");
       return 1;
     }
-    fprintf(fptr, "EXECUTION BY RATE\n\n\n");
+    fprintf(fptr, "EXECUTION BY RATE\n\n");
     execute(head);
   }else if(strcmp(argv[1], "edf") == 0){
     flag = 1;
@@ -192,23 +191,27 @@ int main(int argc, char **argv) {
       perror("fopen edf");
       return 1;
     }
-    fprintf(fptr, "EXECUTION BY EDF\n\n\n");
+    fprintf(fptr, "EXECUTION BY EDF\n\n");
     execute(head);
   }
+  //print o idle, caso o processo termine enquanto estiver idle
+  if(idle > 0){
+    fprintf(fptr, "idle for %u units\n", idle);
+  }
   //escreve os resultados e free os inicializadores
-  fprintf(fptr, "\n\nLOST DEADLINES\n");
+  fprintf(fptr, "\nLOST DEADLINES\n");
   task *a = head;
   while(a != NULL){
     fprintf(fptr, "[%s] %u\n", a->id->name, a->id->l);
     a = a->next;
   }
   a = head;
-  fprintf(fptr, "\n\nCOMPLETE EXECUTION\n");
+  fprintf(fptr, "\nCOMPLETE EXECUTION\n");
   while(a != NULL){
     fprintf(fptr, "[%s] %u\n", a->id->name, a->id->f);
     a = a->next;
   }
-  fprintf(fptr, "\n\nKILLED\n");
+  fprintf(fptr, "\nKILLED\n");
   while(head != NULL){
     fprintf(fptr, "[%s] %u\n", head->id->name, head->id->k);
     a = head->next;

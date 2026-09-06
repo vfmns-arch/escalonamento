@@ -9,9 +9,9 @@ struct result{
   unsigned int k;
 };
 struct task{
-  unsigned int periodo;
-  unsigned int deadline;
-  unsigned int burst;
+  int periodo;
+  int deadline;
+  int burst;
   unsigned int lifetime;
   unsigned int progress;
   struct task *next;
@@ -23,7 +23,7 @@ FILE *fptr;
 unsigned int extime = 0;
 unsigned int idle = 0;
 int flag = 0;
-unsigned int t;
+int t;
 task *org(task *head, task *top, unsigned int count){
   task *curr = head;
   while(curr != NULL){
@@ -142,7 +142,7 @@ int main(int argc, char **argv) {
   char string[200];
   //read o tempo
   if(fgets(string, sizeof(string), fptr) != NULL){
-    if(sscanf(string, "%u", &t) != 1){
+    if(sscanf(string, "%d", &t) != 1 || t < 0){
       printf("tempo invalido");
       return 1;
     }
@@ -155,8 +155,9 @@ int main(int argc, char **argv) {
       fclose(fptr);
       return 1;
     }
-    if(sscanf(string, "%3s %u %u %u", new_id->name, &new_task->periodo, &new_task->deadline, &new_task->burst) != 4){
+    if(sscanf(string, "%3s %d %d %d", new_id->name, &new_task->periodo, &new_task->deadline, &new_task->burst) != 4 || new_task->periodo < 0 || new_task->deadline < 0 || new_task->burst < 0 || new_task->periodo < new_task->deadline || new_task->deadline < new_task->burst){
       free(new_task);
+      free(new_id);
       continue;
     }
     new_task->id = new_id;

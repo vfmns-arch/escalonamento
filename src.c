@@ -142,8 +142,8 @@ int main(int argc, char **argv) {
   char string[200];
   //read o tempo
   if(fgets(string, sizeof(string), fptr) != NULL){
-    if(sscanf(string, "%d", &t) != 1 || t < 0){
-      printf("tempo invalido");
+    if(sscanf(string, "%d", &t) != 1 || t <= 0){
+      fprintf(stderr "tempo invalido");
       return 1;
     }
   }

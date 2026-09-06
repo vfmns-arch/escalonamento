@@ -200,11 +200,13 @@ int main(int argc, char **argv) {
   task *a = head;
   while(a != NULL){
     fprintf(fptr, "[%s] %u\n", a->id->name, a->id->l);
+    a = a->next;
   }
   a = head;
   fprintf(fptr, "\n\nCOMPLETE EXECUTION\n");
   while(a != NULL){
     fprintf(fptr, "[%s] %u\n", a->id->name, a->id->f);
+    a = a->next;
   }
   fprintf(fptr, "\n\nKILLED\n");
   while(head != NULL){

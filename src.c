@@ -155,7 +155,7 @@ int main(int argc, char **argv) {
       fclose(fptr);
       return 1;
     }
-    if(sscanf(string, "%3s %d %d %d", new_id->name, &new_task->periodo, &new_task->deadline, &new_task->burst) != 4 || new_task->periodo < 0 || new_task->deadline < 0 || new_task->burst < 0 || new_task->periodo < new_task->deadline || new_task->deadline < new_task->burst){
+    if(sscanf(string, "%3s %d %d %d", new_id->name, &new_task->periodo, &new_task->deadline, &new_task->burst) != 4 || new_task->periodo <= 0 || new_task->deadline <= 0 || new_task->burst <= 0 || new_task->periodo < new_task->deadline || new_task->deadline < new_task->burst){
       free(new_task);
       free(new_id);
       continue;

@@ -2,19 +2,23 @@
 #include <stdlib.h>
 #include <string.h>
 
-struct task{
+struct result{
   char name[4];
+  unsigned int l;
+  unsigned int f;
+  unsigned int k;
+};
+struct task{
   unsigned int periodo;
   unsigned int deadline;
   unsigned int burst;
   unsigned int lifetime;
   unsigned int progress;
-  unsigned int l;
-  unsigned int f;
-  unsigned int k;
   struct task *next;
+  struct result *id;
 };
 typedef struct task task;
+typedef struct result result;
 FILE *fptr;
 unsigned int extime = 0;
 int flag = 0;
@@ -46,7 +50,7 @@ task *org(task *head, task *top, unsigned int count){
       }
       if(re->next == top){
         if(top != NULL){
-          fprintf(fptr, "[%s] for %u units - H\n", top->name, extime);
+          fprintf(fptr, "[%s] for %u units - H\n", top->id->name, extime);
         }
         top = re;
         extime = 0;
@@ -61,6 +65,7 @@ task *flush(task *current){
   while(current != NULL && ++current->lifetime == current->deadline){
     task *aux = current;
     current = current->next;
+    aux->id->l++;
     free(aux);
   }
   return current;
@@ -82,9 +87,10 @@ void execute(task *head){
         idle = 0;
       }
       if(++top->progress == top->burst){
+        top->id->f++;
         aux = top;
         top = top->next;
-        fprintf(fptr, "[%s] for %u units - F\n", aux->name, extime);
+        fprintf(fptr, "[%s] for %u units - F\n", aux->id->name, extime);
         free(aux);
         extime = 0;
       }
@@ -92,7 +98,8 @@ void execute(task *head){
         aux = top;
         top = top->next;
         top = flush(top);
-        fprintf(fptr, "[%s] for %u units - L\n", aux->name, extime);
+        aux->id->l++;
+        fprintf(fptr, "[%s] for %u units - L\n", aux->id->name, extime);
         free(aux);
         extime = 0;
       }
@@ -109,6 +116,7 @@ void execute(task *head){
   }
   //free o resto da fila
   while(top != NULL){
+    top->id->k++;
     aux = top;
     top = top->next;
     free(aux);
@@ -141,21 +149,24 @@ int main(int argc, char **argv) {
     }
   }
   while(fgets(string, sizeof(string), fptr) != NULL){ 
+    result *new_id = malloc(sizeof(result));
     task *new_task = malloc(sizeof(task));
-    if(new_task == NULL){
+    if(new_task == NULL || new_id == NULL){
       perror("malloc");
       fclose(fptr);
       return 1;
     }
-    if(sscanf(string, "%3s %u %u %u", new_task->name, &new_task->periodo, &new_task->deadline, &new_task->burst) != 4){
+    if(sscanf(string, "%3s %u %u %u", new_id->name, &new_task->periodo, &new_task->deadline, &new_task->burst) != 4){
       free(new_task);
       continue;
     }
+    new_task->id = new_id;
     new_task->lifetime = 0;
     new_task->progress = 0;
-    new_task->f = 0;
-    new_task->l = 0;
-    new_task->next = NULL;
+    new_id->f = 0;
+    new_id->l = 0;
+    new_id->k = 0;
+    new_id->next = NULL;
     if(head == NULL){
       head = new_task;
       tail = new_task;
@@ -172,7 +183,7 @@ int main(int argc, char **argv) {
       perror("fopen rate");
       return 1;
     }
-    fprintf(fptr, "EXECUTION BY RATE\n\n");
+    fprintf(fptr, "EXECUTION BY RATE\n\n\n");
     execute(head);
   }else if(strcmp(argv[1], "edf") == 0){
     flag = 1;
@@ -181,16 +192,28 @@ int main(int argc, char **argv) {
       perror("fopen edf");
       return 1;
     }
-    fprintf(fptr, "EXECUTION BY EDF\n\n");
+    fprintf(fptr, "EXECUTION BY EDF\n\n\n");
     execute(head);
   }
-  fclose(fptr);
-
-  //free os inicializadores
-  while(head != NULL){
-      task *a = head->next;
-      free(head);
-      head = a;
+  //escreve os resultados e free os inicializadores
+  fprintf("\n\nLOST DEADLINES\n");
+  task *a = head;
+  while(a != NULL){
+    fprintf("[%s] %u\n", a->id->name, a->id->l);
   }
+  a = head;
+  fprintf("\n\nCOMPLETE EXECUTION\n");
+  while(a != NULL){
+    fprintf("[%s] %u\n" a->id->name, a->id->f);
+  }
+  fprintf("\n\nKILLED\n");
+  while(head != NULL){
+    fprintf("[%s] %u\n" head->id->name, head->id->k);
+    a = head->next;
+    free(head->id);
+    free(head);
+    head = a;
+  }
+  fclose(fptr);
   return 0;
 }

@@ -204,11 +204,11 @@ int main(int argc, char **argv) {
   a = head;
   fprintf(fptr, "\n\nCOMPLETE EXECUTION\n");
   while(a != NULL){
-    fprintf(fptr, "[%s] %u\n" a->id->name, a->id->f);
+    fprintf(fptr, "[%s] %u\n", a->id->name, a->id->f);
   }
   fprintf(fptr, "\n\nKILLED\n");
   while(head != NULL){
-    fprintf(fptr, "[%s] %u\n" head->id->name, head->id->k);
+    fprintf(fptr, "[%s] %u\n", head->id->name, head->id->k);
     a = head->next;
     free(head->id);
     free(head);

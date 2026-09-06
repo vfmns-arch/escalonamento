@@ -196,19 +196,19 @@ int main(int argc, char **argv) {
     execute(head);
   }
   //escreve os resultados e free os inicializadores
-  fprintf("\n\nLOST DEADLINES\n");
+  fprintf(fptr, "\n\nLOST DEADLINES\n");
   task *a = head;
   while(a != NULL){
-    fprintf("[%s] %u\n", a->id->name, a->id->l);
+    fprintf(fptr, "[%s] %u\n", a->id->name, a->id->l);
   }
   a = head;
-  fprintf("\n\nCOMPLETE EXECUTION\n");
+  fprintf(fptr, "\n\nCOMPLETE EXECUTION\n");
   while(a != NULL){
-    fprintf("[%s] %u\n" a->id->name, a->id->f);
+    fprintf(fptr, "[%s] %u\n" a->id->name, a->id->f);
   }
-  fprintf("\n\nKILLED\n");
+  fprintf(fptr, "\n\nKILLED\n");
   while(head != NULL){
-    fprintf("[%s] %u\n" head->id->name, head->id->k);
+    fprintf(fptr, "[%s] %u\n" head->id->name, head->id->k);
     a = head->next;
     free(head->id);
     free(head);
